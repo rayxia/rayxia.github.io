@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> Swift对象的初始化 · 老猎人工坊</title><meta name="description" content="Swift对象的初始化 - Ray"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.png"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="http://rayxia.github.io/atom.xml" title="老猎人工坊"></head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="https://github.com/rayxia" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">Swift对象的初始化</h1><div class="post-info">Jan 17, 2018</div><div class="post-content"><p>在swift中，对象的初始化和oc中类似，分为两个阶段，一个阶段是对象的内存分配，另一个阶段是对对象中的store value进行初始化。不过第一个阶段和oc略有不同，oc在第一阶段分配内存后，会将所有的属性设为0或者null，而swift则更为灵活，可以指定一些除0以外的值。</p>
+<h2 id="全能初始化方法和便利初始化方法"><a href="#全能初始化方法和便利初始化方法" class="headerlink" title="全能初始化方法和便利初始化方法"></a>全能初始化方法和便利初始化方法</h2><p>在详细分析两段式(two-phrase)初始化之前，先了解一下swift中两种初始化方法：全能初始化方法(designated initializier)和便利初始化方法(convenience initializer)。</p>
+<p>###全能初始化方法<br>就像其名字一样，通过全能初始化方法来初始化一个对象后，其所有的store property都能够进行初始化。一个类可以有多个全能初始化方法，但是一般来说只有一个。只要保证全能初始化方法能够初始化所有属性即可。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">class GameCharacter &#123;</span><br><span class="line">    var weapon: String</span><br><span class="line">    </span><br><span class="line">    init() &#123;</span><br><span class="line">        self.weapon = &quot;fist&quot;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    init(weapon: String) &#123;</span><br><span class="line">        self.weapon = weapon</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如上，Person类有两个全能初始化方法，一个<code>init()</code>，一个是<code>init(name: String)</code>，每个初始化方法都能够将name进行初始化。</p>
+<blockquote>
+<p>如果不在初始化方法中对非可选值的属性进行初始化，编译器会提示未初始化的错误。</p>
+</blockquote>
+<h2 id="便利初始化方法"><a href="#便利初始化方法" class="headerlink" title="便利初始化方法"></a>便利初始化方法</h2><p>便利初始化方法则只是初始化类中部分属性。看以下代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">class Warrior: GameCharacter &#123;</span><br><span class="line">    var shield: String</span><br><span class="line">    </span><br><span class="line">    init(weapon: String, shield: String) &#123;</span><br><span class="line">        self.shield = shield</span><br><span class="line">        super.init(weapon: weapon)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    convenience init(shield: String) &#123;</span><br><span class="line">        self.init(weapon: &quot;fist&quot;, shield: shield)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Warrior有一个全能初始化方法<code>init(weapon: String, shield: String</code>，这个初始化方法可以初始化所有的属性，也就是<code>shield</code>和从父类继承来的<code>weapon</code>。另外还有一个便利初始化方法<code>init(shield: String)</code>，该方法只显示指定了shield的值，而weapon的值则是提供一个默认的值。我们注意到在这个初始化方法在前面加了一个关键字<code>convenience</code>。这个convenience除了表明这个方法是便利初始化方法外，还有一个作用就是让编译器进行一些错误检查。</p>
+<p><strong>全能初始化方法和便利初始化方法之间的调用规则</strong></p>
+<p>全能初始化方法和便利初始化方法调用规则有三个</p>
+<ul>
+<li>全能初始化方法必须调用父类的全能初始化方法</li>
+<li>便利初始化方法只能调用当前类的初始化方法，不能调用父类的初始化方法</li>
+<li>便利初始化方法，最终必须调用当前类的全能初始化方法。</li>
+</ul>
+<p>下图可以很直观的表明这三个规则：</p>
+<p><img src="/2018/01/17/Swift对象的初始化/swift-01.png" alt="image"></p>
+<h2 id="类的两段式初始化"><a href="#类的两段式初始化" class="headerlink" title="类的两段式初始化"></a>类的两段式初始化</h2><p>swift和oc最大的区别，除了多了很多新的特性，比如新的枚举类型，struct类型等，最明显的区别就是在编译器上面。swift的编译器在编译期间做了很多的安全检查工作，比如对于一个可能为nil的值，必须进行解包；两个不同类型的变量不能相互进行赋值（即使是Double和Int之间的也不能隐式转换）。类的初始化方法也一样。</p>
+<p>在类的初始化方法中，有四个安全性的检查：</p>
+<ul>
+<li>全能初始化方法必须确保在父类被初始化之前，所有的属性被正确初始化</li>
+<li>再给被继承的属性赋值之前，必须调用父类的全能初始化方法，也就是说，父类必须被初始化之后才能给被集成的属性赋值</li>
+<li>便利初始化方法在对属性赋值之前，必须调用其它初始化方法</li>
+<li>在当前类没有被正确初始化之前（即第一阶段），不能调用类的实例方法和读取实例属性</li>
+</ul>
+<p>下面这段代码说明了这四个检查</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">class Warrior: GameCharacter &#123;</span><br><span class="line">    var shield: String</span><br><span class="line">    </span><br><span class="line">    init(weapon: String, shield: String) &#123;</span><br><span class="line">        self.shield = shield // 在调用父类之前，必须对初始化本类的属性</span><br><span class="line">//        attack() 编译器错误，当前类还没初始化完成，不能调用实例方法</span><br><span class="line">        super.init(weapon: weapon)</span><br><span class="line">        self.weapon = &quot;sword&quot; //在父类初始化完成后，才能对从父类集成的属性进行赋值</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    convenience init(shield: String) &#123;</span><br><span class="line">        self.init(weapon: &quot;fist&quot;, shield: shield)</span><br><span class="line">        self.shield = &quot;silver shield&quot; //便利初始化方法在调用其它初始化方法后，才能对属性进行赋值</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    func attack() &#123;</span><br><span class="line">        Swift.print(&quot;use \(weapon) to attack&quot;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果以上四个检查任何一个不符合，编译器都会报错。</p>
+<p>而swift的两段式初始化正式基于这四个安全检查的，下面来看看这两个阶段分别作了什么</p>
+<p><strong>第一阶段</strong></p>
+<ul>
+<li>调用全能初始化方法或者便利初始化方法，系统分配内存，但是并未对这个类进行初始化</li>
+<li>在全能初始化方法中初始化所有属性</li>
+<li>调用父类的全能初始化方法执行前两个相同的步骤</li>
+<li>沿着继承链不断向上一直到根类为止</li>
+<li>这个时候在继承链上的类都被正确的初始化，第一阶段完成</li>
+</ul>
+<p><strong>第二阶段</strong></p>
+<ul>
+<li>从根类开始向下返回，每个类的全能初始化方法都能够进行更多的对类的初始化操作，包括可以使用属性，可以调用实例方法</li>
+<li>最后，任何便利方法都有机会去对类进行更多的初始化</li>
+</ul>
+<p>沿用上一个代码片段，当调用<code>init(weapon: String, shield: String)</code>时，第一阶段的初始化就开始了，直到GameCharacter的全能初始化方法中的<code>self.weapon = &quot;fist&quot;</code>，这时候第一阶段结束。然后再沿着继承链向下，直到Warrior类的全能初始化方法中的<code>self.weapon = &quot;sword</code>时，第二阶段结束。</p>
+<p>我们可以看到，swift的二段式初始化能够保证我们在使用一个类的时候能够被正确的初始化，而且这个过程都是在编译时检查的，这样就能够确保我们在编写类的初始化代码的时候不会犯错。</p>
+</div></article></div></main><footer><div class="paginator"></div><div class="copyright"><p>© 2015 - 2018 <a href="http://rayxia.github.io">Ray</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-65933410-1",'auto');ga('send','pageview');</script></body></html>
