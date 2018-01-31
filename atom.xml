@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://rayxia.github.io/"/>
-  <updated>2018-01-18T02:58:13.122Z</updated>
+  <updated>2018-01-31T06:23:52.885Z</updated>
   <id>http://rayxia.github.io/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>NSObject在初始化时做了什么</title>
+    <link href="http://rayxia.github.io/2018/01/25/NSObject%E5%9C%A8%E5%88%9D%E5%A7%8B%E5%8C%96%E6%97%B6%E5%81%9A%E4%BA%86%E4%BB%80%E4%B9%88/"/>
+    <id>http://rayxia.github.io/2018/01/25/NSObject在初始化时做了什么/</id>
+    <published>2018-01-25T13:56:53.000Z</published>
+    <updated>2018-01-31T06:23:52.885Z</updated>
+    
+    <content type="html"><![CDATA[<p>我们都知道，在OC中，对象的初始化分为两个阶段，一个是内存分配，也就是调用<code>alloc</code>方法，另一个是初始化，即调用<code>init</code>方法。那么这两个方法具体是在干什么呢。由于objc的runtime是开源的，所以我们可以直接从<a href="https://opensource.apple.com/tarballs/objc4" target="_blank" rel="noopener">源码</a>中窥探一二。</p><blockquote><p>oc是在不断更新的，所以会有多个版本，每个版本的实现会有所差别，我们用的版本是objc-706</p></blockquote><h2 id="一些重要的数据结构"><a href="#一些重要的数据结构" class="headerlink" title="一些重要的数据结构"></a>一些重要的数据结构</h2><p><strong>objc_object**</strong>和<strong>**objc_class</strong></p><p>OC的所有类都是基于一个根类，也就是NSObject，而NSObject的实质其实是一个结构体，它的很多方法其实都是在操作这个结构而已。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@interface NSObject &lt;NSObject&gt; &#123;</span><br><span class="line">    Class isa  OBJC_ISA_AVAILABILITY;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>上面这段代码是从源码中直接抠出来的，我们可以看到，NSObject里面有一个实例变量isa，其类型为Class。那Class又是什么，继续追踪代码可以看到这一行<code>typedef struct objc_class *Class;</code>，其实很清晰了，Class的实质是一个指向object_class的一个指针。</p><p>下面我们来简单看看objc_class里面有什么。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct objc_class : objc_object &#123;</span><br><span class="line">//     Class ISA;</span><br><span class="line">    Class superclass;</span><br><span class="line">    cache_t cache;             // formerly cache pointer and vtable</span><br><span class="line">    class_data_bits_t bits;    // class_rw_t * plus custom rr/alloc flags</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>通过代码可以看到，object_class其实也不是根部的一个结构体，它还继承于objc_object这个结构，等会儿我们再来看这个东西。objc_class里面有四个数据结构(其中ISA被注释掉，其实这个变量以前继承于objc_object）。</p><blockquote><p>由于涉及到很多数据结构，所以本文并不会对每个数据结构进行详细的解释，只是大概的看一下他的作用,如果有兴趣可以把源码下载下来深入研究。</p></blockquote><p>第一个变量是superclass，其实一目了然，它其实是指向父类的一个指针；第二个cache_t则是一个用于缓存的结构体；第三个是一个class_data_bits_t结构体，它的作用则是存储有关于类的一些信息。</p><p>再来看看objc_object，这个类其实更简单了。内部只有一个私有变量<code>isa</code>，其余的方法大部分都是基于<code>isa</code>的操作以及对引用计数的管理。</p><p><strong>isa_t</strong></p><p>其实我们对于<code>isa</code>这个东西是不会太陌生的，这部分就来具体看看它到底有什么作用。</p><h2 id="alloc"><a href="#alloc" class="headerlink" title="alloc"></a>alloc</h2>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;我们都知道，在OC中，对象的初始化分为两个阶段，一个是内存分配，也就是调用&lt;code&gt;alloc&lt;/code&gt;方法，另一个是初始化，即调用&lt;code&gt;init&lt;/code&gt;方法。那么这两个方法具体是在干什么呢。由于objc的runtime是开源的，所以我们可以直接从&lt;a h
+      
+    
+    </summary>
+    
+    
+  </entry>
   
   <entry>
     <title>Swift对象的初始化</title>
